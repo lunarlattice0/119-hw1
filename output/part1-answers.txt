@@ -1,0 +1,25 @@
+q1,3
+q2,True
+q3a,False
+q4,['KTH Royal Institute of Technology', 'The University of Sheffield', 'The University of Warwick', 'Tsinghua University', 'Zhejiang University']
+q5a,[100, 100, 100, 100, 100, 100, 100, 100]
+q5b,[100, 100, 100, 100, 100, 100, 100, 100]
+q5c,100
+q6c,1
+q7,[9, 9, 9]
+q8a,29
+q9,[67.041, 67.68, 73.539, 82.147, 75.504]
+q10,5
+q11,      region  academic reputation  employer reputation  faculty student  citations per faculty  overall score
+0  Singapore                82.25                 75.3            100.0                  95.95           91.8
+q12,Not Implemented
+q13,Not Implemented
+q14a,Not Implemented
+q15,Not Implemented
+q16,Not Implemented
+q17,Not Implemented
+q18,Not Implemented
+q20a,Not Implemented
+q20b,Not Implemented
+q21,Not Implemented
+PART 1,10

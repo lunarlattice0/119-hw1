@@ -74,7 +74,17 @@ Return as your answer to q1 the number of dataframes loaded.
 (This part is implemented for you.)
 """
 
-NEW_COLUMNS = ['rank', 'university', 'region', 'academic reputation', 'employer reputation', 'faculty student', 'citations per faculty', 'overall score']
+NEW_COLUMNS = [
+    "rank",
+    "university",
+    "region",
+    "academic reputation",
+    "employer reputation",
+    "faculty student",
+    "citations per faculty",
+    "overall score",
+]
+
 
 def load_input():
     """
@@ -83,9 +93,9 @@ def load_input():
     """
 
     # Load the input files and return them as a list of 3 dataframes.
-    df_2019 = pd.read_csv('data/2019.csv', encoding='latin-1')
-    df_2020 = pd.read_csv('data/2020.csv', encoding='latin-1')
-    df_2021 = pd.read_csv('data/2021.csv', encoding='latin-1')
+    df_2019 = pd.read_csv("data/2019.csv", encoding="latin-1")
+    df_2020 = pd.read_csv("data/2020.csv", encoding="latin-1")
+    df_2021 = pd.read_csv("data/2021.csv", encoding="latin-1")
 
     # Standardizing the column names
     df_2019.columns = df_2019.columns.str.lower()
@@ -96,18 +106,25 @@ def load_input():
     # Fill out this part. You can use column access to get only the
     # columns we are interested in using the NEW_COLUMNS variable above.
     # Make sure you return the columns in the new order.
-    # TODO
+
+    # Note to self: python's equivalent to dplyr::select is called filter, and the equivalent to dplyr::filter is query
+    # Select all columns according to NEW_COLUMNS, and assign their values to the df variables.
+    df_2019 = df_2019.filter(items=NEW_COLUMNS)
+    df_2020 = df_2020.filter(items=NEW_COLUMNS)
+    df_2021 = df_2021.filter(items=NEW_COLUMNS)
 
     # When you are done, remove the next line...
-    raise NotImplementedError
+    # raise NotImplementedError
 
     # ...and keep this line to return the dataframes.
     return [df_2019, df_2020, df_2021]
+
 
 def q1(dfs):
     # As the "answer" to this part, let's just return the number of dataframes.
     # Check that your answer shows up in part1-answers.txt.
     return len(dfs)
+
 
 """
 2. Input validation
@@ -120,6 +137,7 @@ and the correct number of rows and columns in the correct order.
 As your answer to q2, return True if all validation checks pass,
 and False otherwise.
 """
+
 
 def q2(dfs):
     """
@@ -138,7 +156,29 @@ def q2(dfs):
     # - the number of rows
     # - the number of columns
     # - the columns are listed in the correct order
-    raise NotImplementedError
+
+    # TODO: Check if meaking sure the number of rows is equivalent is enough.
+    for df in dfs:
+        # ensure that dfs is not empty:
+        if len(dfs) == 0:
+            return False
+
+        # ensure that all have the same number of rows
+        # this can be done by making sure that all match the first df
+        if len(df) != len(dfs[0]):
+            return False
+
+        # ensure that there are the same number of columns as NEW_COLUMNS (also checks if column count is correct)
+        if len(df.columns) != len(NEW_COLUMNS):
+            return False
+
+        # make sure all the columns listed are in the correct order
+        for i in range(0, len(NEW_COLUMNS)):
+            if df.columns[i] != NEW_COLUMNS[i]:
+                return False
+
+    return True
+
 
 """
 ===== Interlude: Checking your output so far =====
@@ -154,10 +194,12 @@ in each question if you find it helpful.
 
 ANSWER_FILE = "output/part1-answers.txt"
 
+
 def interlude():
     print("Answers so far:")
     with open(f"{ANSWER_FILE}") as fh:
         print(fh.read())
+
 
 """
 ===== End of interlude =====
@@ -174,12 +216,27 @@ remember to check the output in part1-answers.txt.
 (True if the checks pass, and False otherwise)
 """
 
+
 def q3(dfs):
     # Check:
     # - that the set of university names in each year is the same
     # Return:
     # - True if they are the same, and False otherwise.
-    raise NotImplementedError
+
+    # TODO: Check if this is necessary
+    # fail immediately if there is no input
+    if len(dfs) == 0:
+        return False
+
+    # Check that all dfs match the first df's university set
+    university_0_set = set(dfs[0]["university"])
+
+    for df in dfs:
+        if set(df["university"]) != university_0_set:
+            return False
+
+    return True
+
 
 """
 3b (commentary).
@@ -187,7 +244,9 @@ Did the checks pass or fail?
 Comment below and explain why.
 
 === ANSWER Q3b BELOW ===
-
+Only the check for the dimensions (q2) passed, which means that not every year had the same universities.
+This is expected since the datasets are CSVs of the top 100 universities for three different years; not every year will have the same universities at the same rankings.
+A university in the top 100 for a certain year may be ranked outside of the top 100 for another year. This means that the university may not appear in all years (and another university will take its spot in the top 100s).
 === END OF Q3b ANSWER ===
 """
 
@@ -212,13 +271,26 @@ Hint:
     try .iloc on the sample, then ["university"].
 """
 
+# array containing len(dfs) number of length 5 arrays
+# len(dfs) x 5
+df_samples = []
+
+
 def q4(dfs):
     # Sample 5 rows from each dataframe
     # Print out the samples
-    raise NotImplementedError
+    for df in dfs:
+        sample = df.sample(5)
+        print(sample)
+        df_samples.append(sample)
 
     # Answer as a list of 5 university names
-    return []
+
+    # TODO: Do we want a general solution?
+    # Returning 2021 only.
+    solution = df_samples[2].iloc[:, [1]]["university"].to_list()
+    return solution
+
 
 """
 Once you have implemented this part,
@@ -230,13 +302,13 @@ and 3 weaknesses of this dataset.
 
 === ANSWER Q4b BELOW ===
 Strengths:
-1.
-2.
+1. The data is tidy: each variable is a column, each column is a variable; each observeration is a row, each row is an observation; each value is a cell, each cell is a value.
+2. All datasets are of the same dimensions (with the same names), so operations between them are relatively simple (less/no transformation).
 
 Weaknesses:
-1.
-2.
-3.
+1. Redundant "rank" column (pandas already generates the row numbering)
+2. The dataset's naming and datatypes are inconsistent. Not only did we have to rename the columns to their lower case versions, but some values use integers (e.g. 100) and others appear to use floats (e.g. 99.8). They should be consistently using float values.
+3. It is very cumbersome to have to load each csv individually. It would make sense to create a collated version of all years, with a column specifying a year for every position (e.g. using our current data, there would be 3 first places, with year values of 2019, 2020, and 2021).
 === END OF Q4b ANSWER ===
 """
 
@@ -260,18 +332,24 @@ Example: if there are 5 non-null values in the first column, 3 in the second, 4 
     [5, 3, 4, ...]
 """
 
+
 def q5a(dfs):
     # TODO
-    raise NotImplementedError
     # Remember to return the list here
     # (Since .info() does not return any values,
     # for this part, you will need to copy and paste
     # the output as a hardcoded list.)
 
+    print(dfs[2].info())
+    return [100, 100, 100, 100, 100, 100, 100, 100]
+
+
 def q5b(dfs):
     # TODO
-    raise NotImplementedError
-    # Remember to return the list here
+
+    # return an array containing the non-nulls for each column of df[2]
+    return dfs[2].count().to_list()
+
 
 """
 5c.
@@ -280,11 +358,12 @@ Also fill this in with how many non-null values are expected.
 We will use this in the unit tests below.
 """
 
+
 def q5c():
-    raise NotImplementedError
     # TODO: fill this in with the expected number
-    num_non_null = 0
+    num_non_null = 100
     return num_non_null
+
 
 """
 ===== Interlude again: Unit tests =====
@@ -312,29 +391,35 @@ from each unit test (function beginning with `test_`).
 Then, run `pytest part1.py` in the terminal.
 """
 
-@pytest.mark.skip
+
+# @pytest.mark.skip
 def test_q1():
     dfs = load_input()
     assert len(dfs) == 3
     assert all([isinstance(df, pd.DataFrame) for df in dfs])
 
-@pytest.mark.skip
+
+# @pytest.mark.skip
 def test_q2():
     dfs = load_input()
     assert q2(dfs)
 
-@pytest.mark.skip
+
+# @pytest.mark.skip
+@pytest.mark.xfail
 def test_q3():
     dfs = load_input()
     assert q3(dfs)
 
-@pytest.mark.skip
+
+# @pytest.mark.skip
 def test_q4():
     dfs = load_input()
     samples = q4(dfs)
     assert len(samples) == 5
 
-@pytest.mark.skip
+
+# @pytest.mark.skip
 def test_q5():
     dfs = load_input()
     answers = q5a(dfs) + q5b(dfs)
@@ -343,18 +428,20 @@ def test_q5():
     for x in answers:
         assert x == num_non_null
 
+
 """
 6a. Are there any tests which fail?
 
 === ANSWER Q6a BELOW ===
-
+Test Q3 failed, since the top 100 universities are not identical every year.
 === END OF Q6a ANSWER ===
 
 6b. For each test that fails, is it because your code
 is wrong or because the test is wrong?
 
 === ANSWER Q6b BELOW ===
-
+The test is wrong. My code correctly identifies that not every year will have the same top 100 universities. Instead, the test
+should check the opposite case that every year has the same top 100 universities, which would be highly unlikely and would probably only happen if there was a code error.
 === END OF Q6b ANSWER ===
 
 IMPORTANT: for any failing tests, if you think you have
@@ -370,9 +457,11 @@ Please include expected failures (@pytest.mark.xfail).
 (If you have no failing or xfail tests, return 0.)
 """
 
+
 def q6c():
     # TODO
-    raise NotImplementedError
+    return 1
+
 
 """
 ===== End of interlude =====
@@ -388,10 +477,19 @@ Append a column 'year' in each dataframe. It must correspond to the year for whi
 As your answer to this part, return the number of columns in each dataframe after the addition.
 """
 
+
 def q7(dfs):
     # TODO
-    raise NotImplementedError
+
+    year_counter = 2019  # we can safely assume that the first df will always be 2019
+    col_count = []  # list containing columns in each df
+    for df in dfs:
+        df["year"] = year_counter
+        year_counter += 1
+        col_count.append(len(df.columns))
     # Remember to return the list here
+    return col_count
+
 
 """
 8a.
@@ -400,18 +498,39 @@ Next, find the count of universities in each region that made it to the Top 100 
 As your answer, return the count for "USA" in 2021.
 """
 
+
 def q8a(dfs):
     # Enter Code here
-    # TODO
-    raise NotImplementedError
+
+    university_counts = []  # list containing region stats for every df
+    for df in dfs:
+        # get regions in a df
+        regions = df["region"].unique()
+
+        region_stat = {}  # dictionary containing a region's stats, in the form ["region"] = count of universities
+        for region in regions:
+            region_stat[region] = len(df[df["region"] == region])
+        university_counts.append(region_stat)
+
+    # print the count of universities in each region for all 3 years.
+    year = 2019
+    for i in range(0, 3):
+        print(f"Year: {year}")
+        print(university_counts[i])
+        year += 1
+
     # Remember to return the count here
+    return university_counts[2]["USA"]
+
 
 """
 8b.
 Do you notice some trend? Comment on what you observe and why might that be consistent throughout the years.
 
 === ANSWER Q8b BELOW ===
-
+Yes, the ordering of some countries from most to least schools in the top 100s remains relatively consistent throughout the years.
+USA, UK, Switzerland, Singapore, China, Japan, Australia, Canada, and South Korea all keep the roughly the same order throughout 2019-2021, and even maintain relatively the same number of top 100 schools.
+This is likely because those countries have well-established universities which are not likely to stop existing or deterioriate.
 === END OF Q8b ANSWER ===
 """
 
@@ -426,11 +545,31 @@ academic reputation, employer reputation, faculty student, citations per faculty
 The list should contain 5 elements.
 """
 
+
 def q9(dfs):
     # Enter code here
     # TODO
-    raise NotImplementedError
+
+    # There are non-numeric columns, so we cannot include them
+    numeric_cols = [
+        "academic reputation",
+        "employer reputation",
+        "faculty student",
+        "citations per faculty",
+        "overall score",
+    ]
+
+    # list to be returned
+    ret_list = []
+
+    target_year = dfs[2]
+    for col in target_year.columns:
+        if col in numeric_cols:
+            ret_list.append(target_year[col].mean().item())
+
     # Return the list here
+    return ret_list
+
 
 """
 10.
@@ -442,12 +581,44 @@ and return it.
 Then in q10, print the first 5 rows of the avg_2021 dataframe.
 """
 
+
 def q10_helper(dfs):
     # Enter code here
     # TODO
     # Placeholder for the avg_2021 dataframe
     avg_2021 = pd.DataFrame()
+
+    target_year = dfs[2]
+
+    regions = set(target_year["region"])
+
+    # TODO: Get rid of university too?
+    # get a list of all the desired colnames
+    col_names = [
+        x for x in target_year if x != "rank" and x != "year" and x != "university"
+    ]
+
+    # define columns in avg_2021
+    for col in col_names:
+        avg_2021[col] = 0  # Initialize the column
+
+    # iterate over regions
+    for region in regions:
+        # subset the dataframes to only contain the desired region
+        temp_df = target_year[target_year["region"] == region]
+
+        # define a dict representing a row in avg_2021
+        row = {}
+        for col in col_names:
+            if col not in ("region"):
+                row[col] = temp_df[col].mean().item()
+            elif col in ("region"):
+                row[col] = temp_df[col].values[0]
+
+        avg_2021 = pd.concat([avg_2021, pd.DataFrame([row])])
+
     return avg_2021
+
 
 def q10(avg_2021):
     """
@@ -458,8 +629,10 @@ def q10(avg_2021):
     (That is, return the integer 5)
     """
     # Enter code here
-    raise NotImplementedError
+    print(avg_2021.head(5))
     # Return 5
+    return 5
+
 
 """
 ===== Questions 11-14: Exploring the avg_2021 dataframe =====
@@ -470,8 +643,11 @@ Sort the avg_2021 dataframe from the previous question based on overall score in
 As your answer to this part, return the first row of the sorted dataframe.
 """
 
+
 def q11(avg_2021):
-    raise NotImplementedError
+    avg_2021 = avg_2021.sort_values(by="overall score", ascending=False)
+    return avg_2021.take([0])
+
 
 """
 12a.
@@ -490,15 +666,16 @@ that you found went down in the rankings.
 Errata: please note that the 2021 dataset we provided is flawed
 (it is almost identical to the 2020 data).
 This is why the question now asks for the difference between 2019 and 2021.
-Your answer to which country/region went down will not be graded.
 
 For the answer to this part return the name of the country/region that tops the ranking
 and the name of one country/region that went down in the rankings.
 """
 
+
 def q12a(avg_2021):
     raise NotImplementedError
-    return ("TODO", "TODO")
+    return ("Singapore", "South Korea")
+
 
 """
 12b.
@@ -506,7 +683,8 @@ Comment on why the country above is at the top of the list.
 (Note: This is an open-ended question.)
 
 === ANSWER Q12b BELOW ===
-
+Singapore is likely at the top of the list as it is an extremely small, but wealthy country.
+This would likely mean that the students attending will likely have had more educational opportunity and focus from the government, allowing for better performance in university.
 === END OF Q12b ANSWER ===
 """
 
@@ -523,11 +701,14 @@ As the answer to this part, return the name of the plot you saved.
 
 import matplotlib.pyplot as plt
 
+
 def q13a(avg_2021):
     # Plot the box and whisker plot
     # TODO
-    raise NotImplementedError
-    # return "output/part1-13a.png"
+
+
+    #return "output/part1-13a.png"
+
 
 """
 b. Do you observe any anomalies in the box and whisker
@@ -548,11 +729,13 @@ Store your plot in output/part1-14a.png.
 As the answer to this part, return the name of the plot you saved.
 """
 
+
 def q14a(avg_2021):
     # Enter code here
     # TODO
     raise NotImplementedError
     # return "output/part1-14a.png"
+
 
 """
 Do you observe any general trend?
@@ -579,6 +762,7 @@ Hint:
 As your answer, return the shape of the new dataframe.
 """
 
+
 def q15_helper(dfs):
     # Return the new dataframe
     # TODO
@@ -586,10 +770,12 @@ def q15_helper(dfs):
     top_10 = pd.DataFrame()
     return top_10
 
+
 def q15(top_10):
     # Enter code here
     # TODO
     raise NotImplementedError
+
 
 """
 16.
@@ -602,11 +788,13 @@ You should be able to modify the column names directly in the dataframe.
 As your answer, return the new column names as a list.
 """
 
+
 def q16(top_10):
     # Enter code here
     # TODO
     raise NotImplementedError
     # return list(df.columns)
+
 
 """
 17a.
@@ -621,11 +809,13 @@ Note:
 *   Your graph should be clear and legend should be placed suitably
 """
 
+
 def q17a(top_10):
     # Enter code here
     # TODO
     raise NotImplementedError
     # return "output/part1-17a.png"
+
 
 """
 17b.
@@ -657,11 +847,13 @@ As the answer to this part, return the name of the plot you saved.
 **Helpful link:** https://datatofish.com/correlation-matrix-pandas/
 """
 
+
 def q18(dfs):
     # Enter code here
     # TODO
     raise NotImplementedError
     # return "output/part1-18.png"
+
 
 """
 19. Comment on at least one entry in the matrix you obtained in the previous
@@ -704,15 +896,18 @@ Use your new column to sort the data by the new values and return the top 10 uni
 
 """
 
+
 def q20a(dfs):
     # TODO
     raise NotImplementedError
     # For your answer, return the score for Berkeley in the new column.
 
+
 def q20b(dfs):
     # TODO
     raise NotImplementedError
     # For your answer, return the top 10 university names as a list.
+
 
 """
 21. Exploring data manipulation and falsification, continued
@@ -730,9 +925,11 @@ The function does not take an input; you should get it from the file.
 Return the top 10 university names as a list from the falsified data.
 """
 
+
 def q21():
     # TODO
     raise NotImplementedError
+
 
 """
 22. Exploring data manipulation and falsification, continued
@@ -764,22 +961,24 @@ and will be used in the first part of Part 2.
 
 UNFINISHED = 0
 
+
 def log_answer(name, func, *args):
     try:
         answer = func(*args)
         print(f"{name} answer: {answer}")
-        with open(ANSWER_FILE, 'a') as f:
-            f.write(f'{name},{answer}\n')
+        with open(ANSWER_FILE, "a") as f:
+            f.write(f"{name},{answer}\n")
             print(f"Answer saved to {ANSWER_FILE}")
     except NotImplementedError:
         print(f"Warning: {name} not implemented.")
-        with open(ANSWER_FILE, 'a') as f:
-            f.write(f'{name},Not Implemented\n')
+        with open(ANSWER_FILE, "a") as f:
+            f.write(f"{name},Not Implemented\n")
         global UNFINISHED
         UNFINISHED += 1
 
+
 def PART_1_PIPELINE():
-    open(ANSWER_FILE, 'w').close()
+    open(ANSWER_FILE, "w").close()
 
     try:
         dfs = load_input()
@@ -842,6 +1041,7 @@ def PART_1_PIPELINE():
 
     return UNFINISHED
 
+
 """
 That's it for Part 1!
 
@@ -850,5 +1050,5 @@ That's it for Part 1!
 Main function
 """
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     log_answer("PART 1", PART_1_PIPELINE)
