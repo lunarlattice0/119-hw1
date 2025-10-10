@@ -821,7 +821,7 @@ def q17a(top_10):
 17b.
 What do you observe from the plot above? Which university has remained consistent in their scores? Which have increased/decreased over the years?
 
-=== ANSWER Q17a BELOW ===
+=== ANSWER Q17b BELOW ===
 
 === END OF Q17b ANSWER ===
 """
