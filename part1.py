@@ -58,6 +58,7 @@ https://www.topuniversities.com/university-rankings/world-university-rankings/20
 To begin, let's load the Pandas library.
 """
 
+from math import e
 import pandas as pd
 
 """
@@ -306,8 +307,8 @@ Strengths:
 2. All datasets are of the same dimensions (with the same names), so operations between them are relatively simple (less/no transformation).
 
 Weaknesses:
-1. Redundant "rank" column (pandas already generates the row numbering)
-2. The dataset's naming and datatypes are inconsistent. Not only did we have to rename the columns to their lower case versions, but some values use integers (e.g. 100) and others appear to use floats (e.g. 99.8). They should be consistently using float values.
+1. The datatypes are inconsistent. some values use integers (e.g. 100) and others appears to use floats (e.g. 99.8). They should be consistently using float values.
+2. The dataset's naming and datatypes are inconsistent. We had to rename all the column names to lower case.
 3. It is very cumbersome to have to load each csv individually. It would make sense to create a collated version of all years, with a column specifying a year for every position (e.g. using our current data, there would be 3 first places, with year values of 2019, 2020, and 2021).
 === END OF Q4b ANSWER ===
 """
@@ -673,7 +674,6 @@ and the name of one country/region that went down in the rankings.
 
 
 def q12a(avg_2021):
-    raise NotImplementedError
     return ("Singapore", "South Korea")
 
 
@@ -704,10 +704,27 @@ import matplotlib.pyplot as plt
 
 def q13a(avg_2021):
     # Plot the box and whisker plot
-    # TODO
+    # TODO : Do we drop region?
 
+    # Drop region
+    avg_2021_no_region = avg_2021 = avg_2021.drop(columns=["region"])
 
-    #return "output/part1-13a.png"
+    # Create a 1d subplot
+    fig, axes = plt.subplots(ncols=len(avg_2021_no_region.columns), nrows=1)
+    fig.suptitle("Box Plots of avg_2021")
+
+    # Iterate over all columns of region and plot in the subplots
+    for i in range(len(avg_2021_no_region.columns)):
+        axes[i].boxplot(x=avg_2021_no_region.iloc[:, i], vert=True)
+        axes[i].set_title(avg_2021_no_region.columns[i], fontsize=8)
+        axes[i].set_ylabel("Score")
+
+    plt.tight_layout()
+    # plt.show()
+
+    plt.tight_layout()
+    plt.savefig("output/part1-13a.png")
+    return "output/part1-13a.png"
 
 
 """
@@ -715,7 +732,8 @@ b. Do you observe any anomalies in the box and whisker
 plot?
 
 === ANSWER Q13b BELOW ===
-
+There is an outlier for the overall score plot. This is represented by the circle (one country has a significantly higher overall score).
+This outlier is likely Singapore, which we identified as the highest scoring nation.
 === END OF Q13b ANSWER ===
 """
 
@@ -733,15 +751,28 @@ As the answer to this part, return the name of the plot you saved.
 def q14a(avg_2021):
     # Enter code here
     # TODO
-    raise NotImplementedError
-    # return "output/part1-14a.png"
+
+    plt.clf()  # otherwise the previous plot will shadow this
+
+    # choose two attributes
+    dual_plot = avg_2021.loc[:, ["academic reputation", "citations per faculty"]]
+
+    plt.scatter(
+        dual_plot.loc[:, ["academic reputation"]],
+        dual_plot.loc[:, ["citations per faculty"]],
+    )
+    # plt.show()
+    plt.title("Citations per faculty vs. academic reputation")
+    plt.tight_layout()
+    plt.savefig("output/part1-14a.png")
+    return "output/part1-14a.png"
 
 
 """
 Do you observe any general trend?
 
 === ANSWER Q14b BELOW ===
-
+There appears to be a very weak positive correlation between the two attributes.
 === END OF Q14b ANSWER ===
 
 ===== Questions 15-20: Exploring the data further =====
@@ -767,14 +798,48 @@ def q15_helper(dfs):
     # Return the new dataframe
     # TODO
     # Placeholder:
+
+    # The columns are university name, 2019 score, 2020 score, 2021 score
     top_10 = pd.DataFrame()
+
+    # year = 2019
+
+    for i in range(len(dfs)):
+        # Make sure the df is sorted by rank (just in case)
+        current_year_df_sort = dfs[i].sort_values(by="rank", ascending=True)
+
+        # Subset the top 10 schools
+        current_year_df = current_year_df_sort.iloc[0:10, :]
+
+        # only keep the university name and overall score
+        current_year_df = current_year_df.loc[:, ["university", "overall score"]]
+
+        # rename overall score to year
+        # current_year_df.rename(
+        #   columns={"overall score": f"overall score_{year}"}, inplace=True
+        # )
+        # Apparently this is done in the next step. Oops!
+
+        # merge to top_10
+        if i == 0:
+            top_10 = current_year_df  # merge doesn't work on 0
+        else:
+            top_10 = top_10.merge(
+                current_year_df,
+                on="university",
+                how="outer",
+            )
+        # year += 1
+
+    # print(top_10)
+
     return top_10
 
 
 def q15(top_10):
     # Enter code here
     # TODO
-    raise NotImplementedError
+    return (len(top_10), len(top_10.columns))
 
 
 """
@@ -792,8 +857,15 @@ As your answer, return the new column names as a list.
 def q16(top_10):
     # Enter code here
     # TODO
-    raise NotImplementedError
-    # return list(df.columns)
+    top_10_clone = top_10
+
+    year = 2019
+    for i in range(1, 4):
+        top_10_clone.rename(columns={top_10.columns[i]: f"overall score_{year}"})
+        year += 1
+
+    # top_10.rename()
+    return list(top_10_clone.columns)
 
 
 """
@@ -811,10 +883,36 @@ Note:
 
 
 def q17a(top_10):
+    # I chose to use a line plot, since we want to show change in overall scores over a year range.
+    # A line plot is suited for displaying the relation between the two variables (since it displays the relationship between the y and x variable),
+    # and the line helps to show trends in the data.
+
     # Enter code here
     # TODO
-    raise NotImplementedError
-    # return "output/part1-17a.png"
+    plt.clf()  # clear graphs
+
+    # Set up titles
+    plt.title("Top 10 Schools' Overall Score from 2019-2021")
+    plt.xlabel("Year")
+    plt.ylabel("Overall Score")
+    plt.xticks(range(2019, 2022, 1))
+
+    # iterate over the top 10 schools
+    for i in range(len(top_10)):
+        year_range = list(range(2019, 2022, 1))
+        overall_scores = top_10.iloc[i, 1:4]
+
+        uni_name = top_10.iloc[i, 0]
+
+        plt.plot(year_range, overall_scores, label=uni_name)
+
+    # show legend
+    plt.legend(prop={"size": 6}, bbox_to_anchor=(1, 1))
+    # plt.show()
+
+    plt.tight_layout()
+    plt.savefig("output/part1-17a.png")
+    return "output/part1-17a.png"
 
 
 """
@@ -822,7 +920,10 @@ def q17a(top_10):
 What do you observe from the plot above? Which university has remained consistent in their scores? Which have increased/decreased over the years?
 
 === ANSWER Q17b BELOW ===
-
+While the data is technically flawed between 2020 and 2021, there are some noticeable trends.
+MIT had no change in scoring.
+Stanford, Harvard, CIT, Cambridge, and UChicago all had decreases over the years.
+Oxford, Zurich, UCL, and Imperial all had increases over the years.
 === END OF Q17b ANSWER ===
 """
 
@@ -851,8 +952,25 @@ As the answer to this part, return the name of the plot you saved.
 def q18(dfs):
     # Enter code here
     # TODO
-    raise NotImplementedError
-    # return "output/part1-18.png"
+    plt.clf()
+
+    df_2021 = dfs[2]
+
+    # TODO: drop year?
+    df_2021 = df_2021.drop(
+        ["region", "university", "year"], axis=1
+    )  # non-numeric / irrelevant data must be removed
+
+    # required to add title / axis labels
+    fig, ax = plt.subplots()
+
+    plt.xticks(range(len(df_2021.columns)), df_2021, fontsize=6, rotation=25)
+    plt.yticks(range(len(df_2021.columns)), df_2021, fontsize=8)
+    fig.suptitle("Correlation Matrix for 2021 Top 100 Universities", y=0.05)
+
+    ax.matshow(df_2021.corr(), cmap="viridis")  # because it looks cool
+    plt.savefig("output/part1-18.png")
+    return "output/part1-18.png"
 
 
 """
@@ -860,7 +978,8 @@ def q18(dfs):
 part that you found surprising or interesting.
 
 === ANSWER Q19 BELOW ===
-
+I found it surprising that there is moderately strong positive correlation between faculty student and employer reputation (indicated by the color green, according to the viridis colorset).
+I would have thought that employers were only interested in how many citations a university puts out, and less with the statistics relating to the inner workings of the university (like faculty-student ratio)
 === END OF Q19 ANSWER ===
 """
 
@@ -899,14 +1018,56 @@ Use your new column to sort the data by the new values and return the top 10 uni
 
 def q20a(dfs):
     # TODO
-    raise NotImplementedError
+
+    # We can make a fake column, "Upward Potential in California" that penalizes having a high ranking of employer reputation in California,
+    # but benefits a high academic reputation
+
+    df_2021 = dfs[2]
+
+    local_focus = []
+    for i in range(len(df_2021)):
+        # figure out if the university is in california
+        if df_2021.loc[i, "university"].find("California") == -1:
+            cali = 0
+        else:
+            cali = 1
+
+        # calculate a penalty score
+        local_focus.append(
+            min(
+                100,
+                (
+                    100
+                    - df_2021.loc[i, "employer reputation"]
+                    + df_2021.loc[i, "academic reputation"] * 0.25
+                )
+                * cali,
+            )
+        )
+
+    # add to the original df
+    df_2021["upward potential"] = local_focus
+
     # For your answer, return the score for Berkeley in the new column.
+    return (
+        df_2021[df_2021["university"] == "University of California, Berkeley (UCB)"]
+        .loc[:, "upward potential"]
+        .values[0]
+    )
 
 
 def q20b(dfs):
     # TODO
-    raise NotImplementedError
     # For your answer, return the top 10 university names as a list.
+    # sort
+    df_2021 = dfs[2].sort_values("upward potential", ascending=False)
+
+    # append to returnlist
+    ret_list = []
+    for i in range(10):
+        ret_list.append(df_2021.iloc[i, 1])
+
+    return ret_list
 
 
 """
@@ -927,8 +1088,50 @@ Return the top 10 university names as a list from the falsified data.
 
 
 def q21():
-    # TODO
-    raise NotImplementedError
+    # for practice's sake, let's try copying the old data, modding it, and then saving it to duplicate
+
+    # load old 2021 data
+    df_2021 = pd.read_csv("data/2021.csv", encoding="latin-1")
+
+    # set all fields to 100 if berkeley
+    berk = df_2021[df_2021["University"] == "University of California, Berkeley (UCB)"]
+    for i in range(len(berk.columns)):
+        # but don't modify the text fields
+        if i not in (0, 1, 9):
+            berk.iloc[0, i] = 100
+        if i == 0:
+            berk.iloc[0, i] = 1  # uprank
+
+    # save it back to 2021_falsified.csv
+    df_2021.loc[df_2021["University"] == "University of California, Berkeley (UCB)"] = (
+        berk
+    )
+
+    # downgrade MIT because they rank too high
+    mit = df_2021[
+        df_2021["University"] == "Massachusetts Institute of Technology (MIT)"
+    ]
+    for i in range(len(mit.columns)):
+        if i not in (0, 1, 9):
+            mit.iloc[0, i] = 99.9
+        if i == 0:
+            mit.iloc[0, i] = 28  # derank
+    df_2021.loc[
+        df_2021["University"] == "Massachusetts Institute of Technology (MIT)"
+    ] = mit
+
+    # save the fake data
+    df_2021 = df_2021.sort_values("Rank", ascending=True)
+    df_2021.to_csv("data/2021_falsified.csv", encoding="latin-1", index=False)
+
+    # load the fake data
+    fake_data = pd.read_csv("data/2021_falsified.csv", encoding="latin-1")
+    fake_data = fake_data.sort_values("Overall Score", ascending=False)
+
+    return list(fake_data.iloc[0:10, 2])
+    # return list(fake_data.iloc[0:10, 1])
+
+    # return as a list
 
 
 """
@@ -940,7 +1143,9 @@ if you were a "bad actor" trying to manipulate the rankings?
 Which do you think would be the most difficult to detect?
 
 === ANSWER Q22 BELOW ===
-
+The first method of making a misleading statistic is far more effective and difficult to detect than simply overwriting data.
+In the first method, people can be easily fooled into believing it is a legitimate number, and it is very easy to make a misleading justification for the score.
+The second method is more obvious and difficult to justify.
 === END OF Q22 ANSWER ===
 """
 

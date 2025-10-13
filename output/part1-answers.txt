@@ -1,7 +1,7 @@
 q1,3
 q2,True
 q3a,False
-q4,['KTH Royal Institute of Technology', 'The University of Sheffield', 'The University of Warwick', 'Tsinghua University', 'Zhejiang University']
+q4,['University of Michigan-Ann Arbor', 'Zhejiang University', 'University of California, San Diego (UCSD)', 'New York University (NYU)', 'Tsinghua University']
 q5a,[100, 100, 100, 100, 100, 100, 100, 100]
 q5b,[100, 100, 100, 100, 100, 100, 100, 100]
 q5c,100
@@ -12,14 +12,14 @@ q9,[67.041, 67.68, 73.539, 82.147, 75.504]
 q10,5
 q11,      region  academic reputation  employer reputation  faculty student  citations per faculty  overall score
 0  Singapore                82.25                 75.3            100.0                  95.95           91.8
-q12,Not Implemented
-q13,Not Implemented
-q14a,Not Implemented
-q15,Not Implemented
-q16,Not Implemented
-q17,Not Implemented
-q18,Not Implemented
-q20a,Not Implemented
-q20b,Not Implemented
-q21,Not Implemented
-PART 1,10
+q12,('Singapore', 'South Korea')
+q13,output/part1-13a.png
+q14a,output/part1-14a.png
+q15,(10, 4)
+q16,['university', 'overall score_x', 'overall score_y', 'overall score']
+q17,output/part1-17a.png
+q18,output/part1-18.png
+q20a,84.725
+q20b,['University of California, Berkeley (UCB)', 'University of California, Los Angeles (UCLA)', 'University of California, San Diego (UCSD)', 'California Institute of Technology (Caltech)', 'University of Oxford', 'Harvard University', 'Stanford University', 'ETH Zurich - Swiss Federal Institute of Technology', 'Imperial College London', 'University of Chicago']
+q21,[100.0, 99.9, 98.4, 97.4, 97.2, 96.9, 95.9, 95.0, 94.8, 94.1]
+PART 1,0
