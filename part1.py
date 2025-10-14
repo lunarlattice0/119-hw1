@@ -970,6 +970,7 @@ def q18(dfs):
 
     ax.matshow(df_2021.corr(), cmap="viridis")  # because it looks cool
     plt.savefig("output/part1-18.png")
+    plt.clf()  # necessary to prevent something funny happening to the graphs in part2
     return "output/part1-18.png"
 
 
