@@ -1,7 +1,7 @@
 q1,3
 q2,True
 q3a,False
-q4,['University of Pennsylvania', 'Columbia University', 'Yale University', 'New York University (NYU)', 'KTH Royal Institute of Technology']
+q4,['University of Birmingham', 'California Institute of Technology (Caltech)', 'University of Michigan-Ann Arbor', 'Duke University', 'Durham University']
 q5a,[100, 100, 100, 100, 100, 100, 100, 100]
 q5b,[100, 100, 100, 100, 100, 100, 100, 100]
 q5c,100
@@ -21,4 +21,4 @@ q17,output/part1-17a.png
 q18,output/part1-18.png
 q20a,84.725
 q20b,['University of California, Berkeley (UCB)', 'University of California, Los Angeles (UCLA)', 'University of California, San Diego (UCSD)', 'California Institute of Technology (Caltech)', 'University of Oxford', 'Harvard University', 'Stanford University', 'ETH Zurich - Swiss Federal Institute of Technology', 'Imperial College London', 'University of Chicago']
-q21,[100.0, 99.9, 98.4, 97.4, 97.2, 96.9, 95.9, 95.0, 94.8, 94.1]
+q21,['University of California, Berkeley (UCB)', 'Massachusetts Institute of Technology (MIT)', 'Stanford University', 'Harvard University', 'University of Oxford', 'California Institute of Technology (Caltech)', 'ETH Zurich - Swiss Federal Institute of Technology', 'University of Cambridge', 'UCL', 'Imperial College London']

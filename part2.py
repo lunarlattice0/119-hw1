@@ -113,7 +113,7 @@ class ThroughputHelper:
         plt.xlabel("Pipeline")
         # Set the font size here to stop graph from smushing
         for label in plt.gca().get_xticklabels():
-            label.set_fontsize(6)
+            label.set_fontsize(5)
         plt.ylabel("Throughput (inputs / sec)")
         plt.suptitle("Comparison of Pipeline Throughput")
         plt.title(f"Retry Count: {NUM_RUNS}")
@@ -242,7 +242,7 @@ class LatencyHelper:
                 end_time = time.perf_counter()
                 elapsed = (
                     end_time - start_time
-                ) / 1000  # perfcounter returns in seconds.
+                ) * 1000  # perfcounter returns in seconds.
                 accumulator += elapsed
             latencies.append(accumulator / NUM_RUNS)  # get average time
 
@@ -619,9 +619,9 @@ def fromvar_latency():
 def q9a():
     # Add all 6 pipelines for a throughput comparison
     h = ThroughputHelper()
-    h.add_pipeline("baseline_small", len(load_input_small()), baseline_small)
-    h.add_pipeline("baseline_medium", len(load_input_medium()), baseline_medium)
-    h.add_pipeline("baseline_large", len(load_input_large()), baseline_large)
+    h.add_pipeline("baseline_small", len(POPULATION_SMALL), baseline_small)
+    h.add_pipeline("baseline_medium", len(POPULATION_MEDIUM), baseline_medium)
+    h.add_pipeline("baseline_large", len(POPULATION_LARGE), baseline_large)
     h.add_pipeline("fromvar_small", len(POPULATION_SMALL), fromvar_small)
     h.add_pipeline("fromvar_medium", len(POPULATION_MEDIUM), fromvar_medium)
     h.add_pipeline("fromvar_large", len(POPULATION_LARGE), fromvar_large)
@@ -687,14 +687,86 @@ Create a new pipeline:
 def for_loop_pipeline(df):
     # Input: the dataframe from load_input()
     # Return a list of min, median, max, mean, and standard deviation
-    raise NotImplementedError
+
+    # We need to iterate over each "entity" chunk until we hit the end of a block.
+    avg_year_delta = []
+
+    # Set up for loop with initial data (i.e. first row)
+    current_row = df.iloc[0, :]
+    current_entity = current_row["Entity"]  # get first row
+    first_year = current_row["Year"]
+    last_year = current_row["Year"]
+    first_pop = current_row["Population (historical)"]
+    last_pop = current_row["Population (historical)"]
+
+    for i in range(1, len(df)):
+        # Sample the ith row
+        inspect_row = df.iloc[i, :]
+        # If we are still in the chunk, and the new year is greater than the previous, increment years and population data.
+        if inspect_row["Entity"] == current_entity:
+            current_year = inspect_row["Year"]
+            if current_year > first_year:
+                last_year = current_year
+                last_pop = inspect_row["Population (historical)"]
+        else:
+            # we're on a new country now, so calc averages
+            if first_year != last_year:  # throw out single year examples
+                avg_year_delta.append((last_pop - first_pop) / (last_year - first_year))
+            # begin tracking the new country
+            current_row = df.iloc[i, :]
+            current_entity = current_row["Entity"]  # get first row
+            first_year = current_row["Year"]
+            last_year = current_row["Year"]
+            first_pop = current_row["Population (historical)"]
+            last_pop = current_row["Population (historical)"]
+
+    # calculate the average for the final year as well
+    if first_year != last_year:  # throw out single year examples
+        avg_year_delta.append((last_pop - first_pop) / (last_year - first_year))
+
+    # Return a list of min, median, max, mean, and standard deviation
+    retlist = []
+
+    avg_year_delta.sort()
+    # calculate min
+    retlist.append(float(avg_year_delta[0]))
+
+    # calculate median
+    if len(avg_year_delta) % 2 != 0:
+        retlist.append(float(avg_year_delta[len(avg_year_delta) // 2]))
+    else:
+        # average the centre 2 elements.
+        mid1 = avg_year_delta[len(avg_year_delta) // 2 - 1]
+        mid2 = avg_year_delta[len(avg_year_delta) // 2]
+        retlist.append(float((mid1 + mid2) / 2))
+
+    # calculate max
+    retlist.append(float(avg_year_delta[len(avg_year_delta) - 1]))
+
+    # calculate mean
+    accumulator = 0
+    for val in avg_year_delta:
+        accumulator += val
+    mean = accumulator / len(avg_year_delta)
+    retlist.append(float(mean))
+
+    # calculate stdev
+    numerator = 0
+    if len(avg_year_delta) > 0:
+        for val in avg_year_delta:
+            numerator += (val - mean) ** 2
+        retlist.append(
+            float((numerator / (len(avg_year_delta) - 1)) ** 0.5)
+        )  # note: pandas uses sample standard deviation
+
+    return retlist
 
 
 def q11():
     # As your answer to this part, call load_input() and then
     # for_loop_pipeline() to return the 5 numbers.
     # (these should match the numbers you got in Q6.)
-    raise NotImplementedError
+    return for_loop_pipeline(load_input("./data/population.csv"))
 
 
 """
@@ -706,19 +778,22 @@ As before, write 4 pipelines based on the datasets from Q7.
 
 
 def for_loop_small():
-    raise NotImplementedError
+    return for_loop_pipeline(load_input_small())
 
 
 def for_loop_medium():
-    raise NotImplementedError
+    return for_loop_pipeline(load_input_medium())
 
 
 def for_loop_large():
-    raise NotImplementedError
+    return for_loop_pipeline(load_input_large())
 
 
 def for_loop_latency():
-    raise NotImplementedError
+    # run an example with two rows.
+    two_row = load_input_small().iloc[0:2, :]
+    assert len(two_row) == 2
+    return for_loop_pipeline(two_row)
 
 
 def q12():
@@ -746,14 +821,29 @@ def q13a():
     # Add all 6 pipelines for a throughput comparison
     # Generate plot in ouptut/q13a.png
     # Return list of 6 throughputs
-    raise NotImplementedError
+    h = ThroughputHelper()
+    h.add_pipeline("baseline_small", len(POPULATION_SMALL), baseline_small)
+    h.add_pipeline("baseline_medium", len(POPULATION_MEDIUM), baseline_medium)
+    h.add_pipeline("baseline_large", len(POPULATION_LARGE), baseline_large)
+    h.add_pipeline("for_loop_small", len(POPULATION_SMALL), for_loop_small)
+    h.add_pipeline("for_loop_medium", len(POPULATION_MEDIUM), for_loop_medium)
+    h.add_pipeline("for_loop_large", len(POPULATION_LARGE), for_loop_large)
+
+    h.compare_throughput()
+    h.generate_plot("output/part2-q13a.png")
+    return h.throughputs
 
 
 def q13b():
     # Add 2 pipelines for a latency comparison
     # Generate plot in ouptut/q13b.png
     # Return list of 2 latencies
-    raise NotImplementedError
+    h = LatencyHelper()
+    h.add_pipeline("baseline_latency", baseline_latency)
+    h.add_pipeline("for_loop_latency", for_loop_latency)
+    h.compare_latency()
+    h.generate_plot("output/part2-q13b.png")
+    return h.latencies
 
 
 """
@@ -763,20 +853,21 @@ Comment on the results you got!
 14a. Which pipelines is faster in terms of throughput?
 
 ===== ANSWER Q14a BELOW =====
-
+Vectorized pipeline is much faster in terms of throughput
 ===== END OF Q14a ANSWER =====
 
 14b. Which pipeline is faster in terms of latency?
 
 ===== ANSWER Q14b BELOW =====
-
+For Loop pipeline is faster in terms of latency
 ===== END OF Q14b ANSWER =====
 
 14c. Do you notice any other interesting observations?
 What does this experiment show?
 
 ===== ANSWER Q14c BELOW =====
-
+Even though the for loop latency is mildly faster (~4ms), the throughput is completely awful, being several times slower than vectorized.
+This experiment shows that, even though there is overhead from using pandas, it is likely not worth the effort to use for loops.
 ===== END OF Q14c ANSWER =====
 """
 
@@ -789,7 +880,8 @@ Which factor that we tested (file vs. variable, vectorized vs. for loop)
 had the biggest impact on performance?
 
 ===== ANSWER Q15 BELOW =====
-
+The factor of vectorized vs. for loop had the biggest impact on performance, especially in throughput (vectorization increases throughput several times over). However, the impact of file vs. variable
+on throughput is still quite notable.
 ===== END OF Q15 ANSWER =====
 
 16.
@@ -800,7 +892,8 @@ varies with the size of the input dataset.
 This is an open ended question.)
 
 ===== ANSWER Q16 BELOW =====
-
+Given the results in q13a.png and q9a.png, throughput is positively correlated with the size of the input dataset (at least in this synthetic test).
+Regardless of vectorization/for loop or file/variable, the throughput increased with larger datasets.
 ===== END OF Q16 ANSWER =====
 
 17.
@@ -811,7 +904,8 @@ throughput is related to latency.
 This is an open ended question.)
 
 ===== ANSWER Q17 BELOW =====
-
+I would argue that throughput is negatively correlated to latency, even though this is not an apples to apples as latency operates on singular rows only.
+Changes made to increase throughput (such as switching to vectorization or switching to in-RAM variables) either has no effect on latency, or causes latency to increase.
 ===== END OF Q17 ANSWER =====
 """
 
@@ -845,16 +939,90 @@ and generate plots for each of these in the following files:
     output/part2-ec-b.png
 """
 
+
 # Extra credit (optional)
+# Let's test the throughput of cloning dataframes and saving vs copying a source file directly.
+# reuse the previous data.
+#
+def ec_helper_clone_df(data):
+    newdf = data.copy()
+    newdf.to_csv("data/ec/junk.csv")
+
+
+def ec_helper_clone_df_small():
+    ec_helper_clone_df(POPULATION_SMALL)
+
+
+def ec_helper_clone_df_medium():
+    ec_helper_clone_df(POPULATION_MEDIUM)
+
+
+def ec_helper_clone_df_large():
+    ec_helper_clone_df(POPULATION_LARGE)
+
+
+def ec_helper_clone_df_single():
+    ec_helper_clone_df(POPULATION_SINGLE_ROW)
+
+
+def ec_helper_fs_copy(fname):
+    with open("data/junk.csv", "w") as f1:
+        with open(fname) as f2:
+            f2text = f2.read()
+            f1.write(f2text)
+
+
+def ec_helper_fs_copy_small():
+    ec_helper_fs_copy("data/population-small.csv")
+
+
+def ec_helper_fs_copy_medium():
+    ec_helper_fs_copy("data/population-medium.csv")
+
+
+def ec_helper_fs_copy_large():
+    ec_helper_fs_copy("data/population.csv")
+
+
+def ec_helper_fs_copy_single():
+    ec_helper_fs_copy("data/population-single-row.csv")
 
 
 def extra_credit_a():
-    raise NotImplementedError
+    h = ThroughputHelper()
+    h.add_pipeline(
+        "ec_helper_fs_copy_small", len(POPULATION_SMALL), ec_helper_fs_copy_small
+    )
+    h.add_pipeline(
+        "ec_helper_fs_copy_medium", len(POPULATION_MEDIUM), ec_helper_fs_copy_medium
+    )
+    h.add_pipeline(
+        "ec_helper_fs_copy_large", len(POPULATION_LARGE), ec_helper_fs_copy_large
+    )
+    h.add_pipeline(
+        "ec_helper_clone_df_small", len(POPULATION_SMALL), ec_helper_clone_df_small
+    )
+    h.add_pipeline(
+        "ec_helper_clone_df_medium", len(POPULATION_MEDIUM), ec_helper_clone_df_medium
+    )
+    h.add_pipeline(
+        "ec_helper_clone_df_large", len(POPULATION_LARGE), ec_helper_clone_df_large
+    )
+    h.compare_throughput()
+    h.generate_plot("output/part2-ec-a.png")
+    return h.throughputs
 
 
 def extra_credit_b():
-    raise NotImplementedError
+    h = LatencyHelper()
+    h.add_pipeline("ec_helper_fs_copy_single", ec_helper_fs_copy_single)
+    h.add_pipeline("ec_helper_clone_df_single", ec_helper_clone_df_single)
+    h.compare_latency()
+    h.generate_plot("output/part2-ec-b.png")
+    return h.latencies
 
+
+# python filesystem copy is much faster in both throughput and latency.
 
 """
 ===== Wrapping things up =====

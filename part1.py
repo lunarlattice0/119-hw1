@@ -1129,7 +1129,7 @@ def q21():
     fake_data = pd.read_csv("data/2021_falsified.csv", encoding="latin-1")
     fake_data = fake_data.sort_values("Overall Score", ascending=False)
 
-    return list(fake_data.iloc[0:10, 2])
+    return list(fake_data.iloc[0:10, 1])
     # return list(fake_data.iloc[0:10, 1])
 
     # return as a list
