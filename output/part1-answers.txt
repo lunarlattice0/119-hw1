@@ -1,7 +1,7 @@
 q1,3
 q2,True
 q3a,False
-q4,['University of Birmingham', 'California Institute of Technology (Caltech)', 'University of Michigan-Ann Arbor', 'Duke University', 'Durham University']
+q4,['Carnegie Mellon University', 'University of Copenhagen', 'City University of Hong Kong', 'Rice University', 'Lomonosov Moscow State University']
 q5a,[100, 100, 100, 100, 100, 100, 100, 100]
 q5b,[100, 100, 100, 100, 100, 100, 100, 100]
 q5c,100

@@ -684,6 +684,7 @@ Create a new pipeline:
 """
 
 
+# TODO: Figure out why this is running like shit
 def for_loop_pipeline(df):
     # Input: the dataframe from load_input()
     # Return a list of min, median, max, mean, and standard deviation
@@ -727,21 +728,22 @@ def for_loop_pipeline(df):
     # Return a list of min, median, max, mean, and standard deviation
     retlist = []
 
+    # need to sort for median and min/max
     avg_year_delta.sort()
     # calculate min
-    retlist.append(float(avg_year_delta[0]))
+    retlist.append(avg_year_delta[0])
 
     # calculate median
     if len(avg_year_delta) % 2 != 0:
-        retlist.append(float(avg_year_delta[len(avg_year_delta) // 2]))
+        retlist.append(avg_year_delta[len(avg_year_delta) // 2])
     else:
         # average the centre 2 elements.
         mid1 = avg_year_delta[len(avg_year_delta) // 2 - 1]
         mid2 = avg_year_delta[len(avg_year_delta) // 2]
-        retlist.append(float((mid1 + mid2) / 2))
+        retlist.append((mid1 + mid2) / 2)
 
     # calculate max
-    retlist.append(float(avg_year_delta[len(avg_year_delta) - 1]))
+    retlist.append(avg_year_delta[len(avg_year_delta) - 1])
 
     # calculate mean
     accumulator = 0
@@ -752,14 +754,14 @@ def for_loop_pipeline(df):
 
     # calculate stdev
     numerator = 0
-    if len(avg_year_delta) > 0:
+    if len(avg_year_delta) > 1:
         for val in avg_year_delta:
             numerator += (val - mean) ** 2
         retlist.append(
             float((numerator / (len(avg_year_delta) - 1)) ** 0.5)
         )  # note: pandas uses sample standard deviation
 
-    return retlist
+    return [float(item) for item in retlist]
 
 
 def q11():
@@ -966,7 +968,7 @@ def ec_helper_clone_df_single():
 
 
 def ec_helper_fs_copy(fname):
-    with open("data/junk.csv", "w") as f1:
+    with open("data/ec/junk.csv", "w") as f1:
         with open(fname) as f2:
             f2text = f2.read()
             f1.write(f2text)

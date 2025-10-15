@@ -41,35 +41,50 @@ get uploaded when you submit.
 
 # You may need to conda install requests or pip3 install requests
 import requests
+import subprocess
+import os
+
 
 def download_file(url, filename):
     r = requests.get(url)
-    with open(filename, 'wb') as f:
+    with open(filename, "wb") as f:
         f.write(r.content)
+
 
 def clone_repo(repo_url):
     # TODO
-    raise NotImplementedError
+    subprocess.run(["git", "clone", repo_url])
+
 
 def run_script(script_path, data_path):
-    # TODO
-    raise NotImplementedError
+    subprocess.run(["python3", script_path, data_path])
+
 
 def setup(repo_url, data_url, script_path):
-    # TODO
-    raise NotImplementedError
+    clone_repo(repo_url)
+    download_file(data_url, "data/dataset.txt")
+    run_script(script_path, "data/dataset.txt")
+
 
 def q1():
     # Call setup as described in the prompt
-    # TODO
+    setup(
+        "https://github.com/DavisPL-Teaching/119-hw1",
+        "https://raw.githubusercontent.com/DavisPL-Teaching/119-hw1/refs/heads/main/data/test-input.txt",
+        "test-script.py",  # TODO: Do we call this on the test-script in the current dir, or in the downloaded dir?
+    )
+
     # Read the file test-output.txt to a string
-    # TODO
+    out = ""
+    with open("output/test-output.txt", "r") as f:
+        out = f.read()
+
     # Return the integer value of the output
-    # TODO
-    raise NotImplementedError
+    return int(out)
+
 
 """
-2.
+2.c
 Suppose you are on a team of 5 data scientists working on
 a project; every 2 weeks you need to re-run your scripts to
 fetch the latest data and produce the latest analysis.
@@ -78,13 +93,14 @@ a. When might you need to use a script like setup() above in
 this scenario?
 
 === ANSWER Q2a BELOW ===
-
+A script like above would be very useful for two reasons. If fetching data and setting up environments is a long and tedious task, a script
+like setup() would save lots of time over pasting commands manually. In addition, a script could be automated (such as through cronjobs) to run every 2 weeks.
 === END OF Q2a ANSWER ===
 
 Do you see an alternative to using a script like setup()?
 
 === ANSWER Q2b BELOW ===
-
+Yes, you can use a shell script instead.
 === END OF Q2b ANSWER ===
 
 3.
@@ -124,18 +140,36 @@ Hint: search for "import" in parts 1-3. Did you miss installing
 any packages?
 """
 
+
 def setup_for_new_machine():
     # TODO
-    raise NotImplementedError
+    subprocess.run(["conda", "create", "-n", "env", "-y"])
+    subprocess.run(["conda", "init"])
+    subprocess.run(["conda", "activate", "env"])
+    # Install dependencies using conda
+    subprocess.run(
+        [
+            "conda",
+            "install",
+            "pandas",
+            "numpy",
+            "requests",
+            "matplotlib",
+            "pytest",
+            "-y",
+        ]
+    )
+
 
 def q3():
     # As your answer, return a string containing
     # the operating system name that you assumed the
     # new machine to have.
     # TODO
-    raise NotImplementedError
-    # os =
+    # raise NotImplementedError
+    os = "Fedora Linux 42"
     return os
+
 
 """
 4. This question is open ended :)
@@ -147,7 +181,8 @@ scripts like setup() and setup_for_new_machine()
 in their day-to-day jobs?
 
 === ANSWER Q4 BELOW ===
-
+I would estimate 10% of the entire project timespan, but the initial stages of the project will be completely occupied with setting these scripts up.
+This is because it is necessary to set up a "framework" for future work at the start, but only maintenance of scripts is required after.
 === END OF Q4 ANSWER ===
 
 5.
@@ -164,7 +199,62 @@ If you don't have a friend's machine, please speculate about
 what might happen if you tried. You can guess.
 
 === ANSWER Q5 BELOW ===
+This script does not work. The output is:
 
+    Channels:
+     - conda-forge
+    Platform: linux-64
+    Collecting package metadata (repodata.json): done
+    Solving environment: done
+
+    ## Package Plan ##
+
+      environment location: /root/.conda/envs/env
+
+
+
+
+    Downloading and Extracting Packages:
+
+    Preparing transaction: done
+    Verifying transaction: done
+    Executing transaction: done
+    #
+    # To activate this environment, use
+    #
+    #     $ conda activate env
+    #
+    # To deactivate an active environment, use
+    #
+    #     $ conda deactivate
+
+    no change     /usr/condabin/conda
+    no change     /usr/bin/conda
+    no change     /usr/bin/conda-env
+    no change     /usr/bin/activate
+    no change     /usr/bin/deactivate
+    no change     /usr/etc/profile.d/conda.sh
+    needs sudo    /usr/etc/fish/conf.d/conda.fish
+    no change     /usr/shell/condabin/Conda.psm1
+    no change     /usr/shell/condabin/conda-hook.ps1
+    needs sudo    /usr/lib/python3.13/site-packages/xontrib/conda.xsh
+    no change     /usr/etc/profile.d/conda.csh
+    no change     /root/.bashrc
+    No action taken.
+    Operation failed.
+    /usr/lib/python3.13/site-packages/conda/gateways/logging.py:66: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in staticmethod() if you want to preserve the old behavior
+      record.msg = self.TOKEN_REPLACE(record.msg)
+
+    CondaError: Run 'conda init' before 'conda activate'
+
+    /usr/lib/python3.13/site-packages/conda/gateways/logging.py:66: FutureWarning: functools.partial will be a method descriptor in future Python versions; wrap it in staticmethod() if you want to preserve the old behavior
+      record.msg = self.TOKEN_REPLACE(record.msg)
+
+    NoBaseEnvironmentError: This conda installation has no default base environment. Use
+    'conda create' to create new environments and 'conda activate' to
+    activate environments.
+
+The issue lies in the fact that after conda activate is run, the shell needs to be reloaded. This isn't possible from python.
 === END OF Q5 ANSWER ===
 
 ===== Questions 6-9: A comparison of shell vs. Python =====
@@ -220,21 +310,27 @@ with:
 .
 """
 
+
 def pipeline_shell():
     # TODO
-    raise NotImplementedError
-    # Return resulting integer
+    output = os.popen("cat data/population.csv | tail -n +2 | wc -l").read().strip()
+    return int(output)
+
 
 def pipeline_pandas():
-    # TODO
-    raise NotImplementedError
+    df = pd.read_csv("data/population.csv")
+    # Return the number of rows
+    return int(len(df))
     # Return resulting integer
+
 
 def q6():
     # As your answer to this part, check that both
     # integers are the same and return one of them.
     # TODO
-    raise NotImplementedError
+    assert pipeline_shell() == pipeline_pandas()
+    return pipeline_shell()
+
 
 """
 Let's do a performance comparison between the two methods.
@@ -248,12 +344,20 @@ Additionally, generate a plot and save it in
 7. Throughput
 """
 
+
 def q7():
     # Return a list of two floats
     # [throughput for shell, throughput for pandas]
     # (in rows per second)
     # TODO
-    raise NotImplementedError
+    h = part2.ThroughputHelper()
+    rows = pipeline_shell()
+    h.add_pipeline("shell", rows, pipeline_shell)
+    h.add_pipeline("pandas", rows, pipeline_pandas)
+    h.compare_throughput()
+    h.generate_plot("output/part3-q7.png")
+    return h.throughputs
+
 
 """
 8. Latency
@@ -267,19 +371,28 @@ Additionally, generate a plot and save it in
     output/part3-q8.png
 """
 
+
 def q8():
     # Return a list of two floats
     # [latency for shell, latency for pandas]
     # (in milliseconds)
     # TODO
-    raise NotImplementedError
+    h = part2.LatencyHelper()
+    h.add_pipeline("shell", pipeline_shell)
+    h.add_pipeline("pandas", pipeline_pandas)
+    h.compare_latency()
+    h.generate_plot("output/part3-q8.png")
+    h.latencies
+
 
 """
 9. Which method is faster?
 Comment on anything else you notice below.
 
 === ANSWER Q9 BELOW ===
-
+Using the shell is signficiantly faster in both latency and throughput.
+I notice the difference is quite large, but I'm not sure if the clunkiness of calling to shell (lack of portability) is necessarily the best option.
+Perhaps testing the performance of reading using portable python file handles, open(), is worthwhile.
 === END OF Q9 ANSWER ===
 """
 
@@ -296,22 +409,24 @@ This will be run when you run the code.
 ANSWER_FILE = "output/part3-answers.txt"
 UNFINISHED = 0
 
+
 def log_answer(name, func, *args):
     try:
         answer = func(*args)
         print(f"{name} answer: {answer}")
-        with open(ANSWER_FILE, 'a') as f:
-            f.write(f'{name},{answer}\n')
+        with open(ANSWER_FILE, "a") as f:
+            f.write(f"{name},{answer}\n")
             print(f"Answer saved to {ANSWER_FILE}")
     except NotImplementedError:
         print(f"Warning: {name} not implemented.")
-        with open(ANSWER_FILE, 'a') as f:
-            f.write(f'{name},Not Implemented\n')
+        with open(ANSWER_FILE, "a") as f:
+            f.write(f"{name},Not Implemented\n")
         global UNFINISHED
         UNFINISHED += 1
 
+
 def PART_3_PIPELINE():
-    open(ANSWER_FILE, 'w').close()
+    open(ANSWER_FILE, "w").close()
 
     # Q1-5
     log_answer("q1", q1)
@@ -331,11 +446,12 @@ def PART_3_PIPELINE():
 
     return UNFINISHED
 
+
 """
 === END OF PART 3 ===
 
 Main function
 """
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     log_answer("PART 3", PART_3_PIPELINE)
