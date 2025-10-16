@@ -81,7 +81,6 @@ class ThroughputHelper:
         # iterate over pairs of inputsize and fps
         for input_size, funcptr in zip(self.sizes, self.pipelines):
             # we will average the throughput over NUM_RUNS trials.
-            # print(f"DEBUG: {input_size}, fp: {funcptr}")
 
             # get running time
             timer = timeit.Timer(funcptr)
@@ -342,12 +341,9 @@ of the pipeline in part 1.
 
 def q5a():
     total_df = part1.load_input()  # since we only care about the pipeline's tp and lat
-    total_size = 0
-    for df in total_df:
-        total_size += len(df)
+    total_size = len(total_df)
     h = ThroughputHelper()
 
-    # TODO: What do we pick as the total size?
     h.add_pipeline("part1", total_size, lambda: part1.PART_1_PIPELINE)
     h.compare_throughput()
     h.generate_plot("output/part2-q5a.png")
@@ -418,8 +414,44 @@ See if you can compute this using Pandas functions only.
 def load_input(filename):
     # Return a dataframe containing the population data
     # **Clean the data here**
-    # TODO: Cleaning necessary?
-    return pd.read_csv("data/population.csv")
+
+    # remove continents and world data
+    # (World data is listed under OWID_WRL)
+    unclean = pd.read_csv(filename)
+
+    # drop OWID_WRL entries
+    unclean = pd.DataFrame(unclean[unclean["Code"] != "OWID_WRL"])
+    # I need to convert to dataframe, otherwise python will convert it to series and break
+    # some operations.
+
+    # drop continents
+    continents = [
+        "North America",
+        "Asia",
+        "Africa",
+        "Europe",
+        "South America",
+        "Oceania",
+        "Africa (UN)",
+        "Americas (UN)",
+        "Asia (UN)",
+        "Asia (excl. China and India)",
+        "Europe (UN)",
+        "Europe (excl. Russia)",
+        "European Union (27)",
+        "Latin America and the Caribbean (UN)",
+        "Northern America (UN)",
+        "Oceania (UN)",
+        "South America (excl. Brazil)",
+    ]
+
+    # Filter entity by continents, and get the opposite of the set.
+    # Search in unclean with the newly found opposite set.
+    unclean = pd.DataFrame(unclean[~unclean["Entity"].isin(continents)])
+
+    clean = pd.DataFrame(unclean)
+
+    return clean
 
 
 def population_pipeline(df):
@@ -491,22 +523,24 @@ Each should return a dataframe.
 The input CSV file will have 600 rows, but the DataFrame (after your cleaning) may have less than that.
 """
 
+# I copied the csvs with "head" to create the different versions
+
 
 def load_input_small():
-    return pd.read_csv("data/population-small.csv")
+    return load_input("data/population-small.csv")
 
 
 def load_input_medium():
-    return pd.read_csv("data/population-medium.csv")
+    return load_input("data/population-medium.csv")
 
 
 def load_input_large():
-    return pd.read_csv("data/population.csv")
+    return load_input("data/population.csv")
 
 
 def load_input_single_row():
     # This is the pipeline we will use for latency.
-    return pd.read_csv("data/population-single-row.csv")
+    return load_input("data/population-single-row.csv")
 
 
 def q7():
@@ -590,13 +624,11 @@ b. Generate a plot in output/part2-q9b.png of the latencies
 """
 
 # TODO
-POPULATION_SMALL = pd.read_csv("data/population-small.csv")
-POPULATION_MEDIUM = pd.read_csv("data/population-medium.csv")
-POPULATION_LARGE = pd.read_csv("data/population.csv")
-POPULATION_SINGLE_ROW = pd.read_csv("data/population-single-row.csv")
-POPULATION_TWO_ROW = pd.read_csv("data/population-small.csv").iloc[
-    0:2, :
-]  # TODO: ask on piazza
+POPULATION_SMALL = load_input("data/population-small.csv")
+POPULATION_MEDIUM = load_input("data/population-medium.csv")
+POPULATION_LARGE = load_input("data/population.csv")
+POPULATION_SINGLE_ROW = load_input("data/population-single-row.csv")
+POPULATION_TWO_ROW = load_input("data/population-small.csv").iloc[0:2, :]
 
 
 def fromvar_small():
@@ -684,13 +716,19 @@ Create a new pipeline:
 """
 
 
-# TODO: Figure out why this is running like shit
 def for_loop_pipeline(df):
     # Input: the dataframe from load_input()
     # Return a list of min, median, max, mean, and standard deviation
 
     # We need to iterate over each "entity" chunk until we hit the end of a block.
     avg_year_delta = []
+
+    # note: it turns out there is quite a lot variance in this problem!
+    # if using iloc, the result is slower than vectorization.
+    # However, if one converts the df to a list, and then uses array accesses which is O(1), the result actually
+    # beats vectorization!
+
+    # However, I choose to use iloc, for the sake of example.
 
     # Set up for loop with initial data (i.e. first row)
     current_row = df.iloc[0, :]
@@ -969,6 +1007,7 @@ def ec_helper_clone_df_single():
 
 def ec_helper_fs_copy(fname):
     with open("data/ec/junk.csv", "w") as f1:
+        # open a temp file for writing to be able to test i/o
         with open(fname) as f2:
             f2text = f2.read()
             f1.write(f2text)

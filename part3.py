@@ -62,8 +62,9 @@ def run_script(script_path, data_path):
 
 def setup(repo_url, data_url, script_path):
     clone_repo(repo_url)
-    download_file(data_url, "data/dataset.txt")
-    run_script(script_path, "data/dataset.txt")
+    # arbitrary file output location, since it is not specified.
+    download_file(data_url, "data/test-input.txt")
+    run_script(script_path, "data/test-input.txt")
 
 
 def q1():
@@ -71,7 +72,7 @@ def q1():
     setup(
         "https://github.com/DavisPL-Teaching/119-hw1",
         "https://raw.githubusercontent.com/DavisPL-Teaching/119-hw1/refs/heads/main/data/test-input.txt",
-        "test-script.py",  # TODO: Do we call this on the test-script in the current dir, or in the downloaded dir?
+        "test-script.py",
     )
 
     # Read the file test-output.txt to a string
@@ -143,6 +144,7 @@ any packages?
 
 def setup_for_new_machine():
     # TODO
+    # Setup conda env
     subprocess.run(["conda", "create", "-n", "env", "-y"])
     subprocess.run(["conda", "init"])
     subprocess.run(["conda", "activate", "env"])
@@ -313,6 +315,7 @@ with:
 
 def pipeline_shell():
     # TODO
+    # call the command
     output = os.popen("cat data/population.csv | tail -n +2 | wc -l").read().strip()
     return int(output)
 
@@ -321,13 +324,13 @@ def pipeline_pandas():
     df = pd.read_csv("data/population.csv")
     # Return the number of rows
     return int(len(df))
-    # Return resulting integer
 
 
 def q6():
     # As your answer to this part, check that both
     # integers are the same and return one of them.
     # TODO
+    # This will fail if they don't match.
     assert pipeline_shell() == pipeline_pandas()
     return pipeline_shell()
 
@@ -350,6 +353,7 @@ def q7():
     # [throughput for shell, throughput for pandas]
     # (in rows per second)
     # TODO
+    # Same layout as in part 2...
     h = part2.ThroughputHelper()
     rows = pipeline_shell()
     h.add_pipeline("shell", rows, pipeline_shell)
@@ -377,12 +381,13 @@ def q8():
     # [latency for shell, latency for pandas]
     # (in milliseconds)
     # TODO
+    # Still the same layout as in part 2...
     h = part2.LatencyHelper()
     h.add_pipeline("shell", pipeline_shell)
     h.add_pipeline("pandas", pipeline_pandas)
     h.compare_latency()
     h.generate_plot("output/part3-q8.png")
-    h.latencies
+    return h.latencies
 
 
 """

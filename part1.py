@@ -158,7 +158,7 @@ def q2(dfs):
     # - the number of columns
     # - the columns are listed in the correct order
 
-    # TODO: Check if meaking sure the number of rows is equivalent is enough.
+    # iterate over all dfs
     for df in dfs:
         # ensure that dfs is not empty:
         if len(dfs) == 0:
@@ -224,14 +224,10 @@ def q3(dfs):
     # Return:
     # - True if they are the same, and False otherwise.
 
-    # TODO: Check if this is necessary
-    # fail immediately if there is no input
-    if len(dfs) == 0:
-        return False
-
-    # Check that all dfs match the first df's university set
+    # Check that all dfs match the first df's university set...
     university_0_set = set(dfs[0]["university"])
 
+    # ...by iterating all university names as a set, and comparing against the first df.
     for df in dfs:
         if set(df["university"]) != university_0_set:
             return False
@@ -287,8 +283,6 @@ def q4(dfs):
 
     # Answer as a list of 5 university names
 
-    # TODO: Do we want a general solution?
-    # Returning 2021 only.
     solution = df_samples[2].iloc[:, [1]]["university"].to_list()
     return solution
 
@@ -361,7 +355,6 @@ We will use this in the unit tests below.
 
 
 def q5c():
-    # TODO: fill this in with the expected number
     num_non_null = 100
     return num_non_null
 
@@ -484,6 +477,7 @@ def q7(dfs):
 
     year_counter = 2019  # we can safely assume that the first df will always be 2019
     col_count = []  # list containing columns in each df
+    # Iterate over all dfs and add the appropriate year per df
     for df in dfs:
         df["year"] = year_counter
         year_counter += 1
@@ -563,6 +557,7 @@ def q9(dfs):
     # list to be returned
     ret_list = []
 
+    # Average for all cols
     target_year = dfs[2]
     for col in target_year.columns:
         if col in numeric_cols:
@@ -589,11 +584,12 @@ def q10_helper(dfs):
     # Placeholder for the avg_2021 dataframe
     avg_2021 = pd.DataFrame()
 
+    # desired year is 2021
     target_year = dfs[2]
 
+    # define groups of regions
     regions = set(target_year["region"])
 
-    # TODO: Get rid of university too?
     # get a list of all the desired colnames
     col_names = [
         x for x in target_year if x != "rank" and x != "year" and x != "university"
@@ -673,6 +669,7 @@ and the name of one country/region that went down in the rankings.
 """
 
 
+# Note: I ran the dataset separately.
 def q12a(avg_2021):
     return ("Singapore", "South Korea")
 
@@ -707,7 +704,7 @@ def q13a(avg_2021):
     # TODO : Do we drop region?
 
     # Drop region
-    avg_2021_no_region = avg_2021 = avg_2021.drop(columns=["region"])
+    avg_2021_no_region = avg_2021.drop(columns=["region"])
 
     # Create a 1d subplot
     fig, axes = plt.subplots(ncols=len(avg_2021_no_region.columns), nrows=1)
@@ -718,9 +715,6 @@ def q13a(avg_2021):
         axes[i].boxplot(x=avg_2021_no_region.iloc[:, i], vert=True)
         axes[i].set_title(avg_2021_no_region.columns[i], fontsize=8)
         axes[i].set_ylabel("Score")
-
-    plt.tight_layout()
-    # plt.show()
 
     plt.tight_layout()
     plt.savefig("output/part1-13a.png")
@@ -757,11 +751,12 @@ def q14a(avg_2021):
     # choose two attributes
     dual_plot = avg_2021.loc[:, ["academic reputation", "citations per faculty"]]
 
+    # create scatterplot
     plt.scatter(
         dual_plot.loc[:, ["academic reputation"]],
         dual_plot.loc[:, ["citations per faculty"]],
     )
-    # plt.show()
+
     plt.title("Citations per faculty vs. academic reputation")
     plt.tight_layout()
     plt.savefig("output/part1-14a.png")
@@ -814,25 +809,15 @@ def q15_helper(dfs):
         # only keep the university name and overall score
         current_year_df = current_year_df.loc[:, ["university", "overall score"]]
 
-        # rename overall score to year
-        # current_year_df.rename(
-        #   columns={"overall score": f"overall score_{year}"}, inplace=True
-        # )
-        # Apparently this is done in the next step. Oops!
-
         # merge to top_10
         if i == 0:
-            top_10 = current_year_df  # merge doesn't work on 0
+            top_10 = current_year_df  # merge doesn't work on itself
         else:
             top_10 = top_10.merge(
                 current_year_df,
                 on="university",
                 how="outer",
             )
-        # year += 1
-
-    # print(top_10)
-
     return top_10
 
 
@@ -859,12 +844,13 @@ def q16(top_10):
     # TODO
     top_10_clone = top_10
 
+    # rename cols to describe overall score for each year
     year = 2019
     for i in range(1, 4):
-        top_10_clone.rename(columns={top_10.columns[i]: f"overall score_{year}"})
+        top_10_clone.rename(
+            columns={top_10.columns[i]: f"overall score_{year}"}, inplace=True
+        )
         year += 1
-
-    # top_10.rename()
     return list(top_10_clone.columns)
 
 
@@ -897,7 +883,7 @@ def q17a(top_10):
     plt.ylabel("Overall Score")
     plt.xticks(range(2019, 2022, 1))
 
-    # iterate over the top 10 schools
+    # iterate plot over the top 10 schools
     for i in range(len(top_10)):
         year_range = list(range(2019, 2022, 1))
         overall_scores = top_10.iloc[i, 1:4]
@@ -956,7 +942,7 @@ def q18(dfs):
 
     df_2021 = dfs[2]
 
-    # TODO: drop year?
+    # drop year since it is blank
     df_2021 = df_2021.drop(
         ["region", "university", "year"], axis=1
     )  # non-numeric / irrelevant data must be removed
@@ -968,9 +954,9 @@ def q18(dfs):
     plt.yticks(range(len(df_2021.columns)), df_2021, fontsize=8)
     fig.suptitle("Correlation Matrix for 2021 Top 100 Universities", y=0.05)
 
-    ax.matshow(df_2021.corr(), cmap="viridis")  # because it looks cool
+    ax.matshow(df_2021.corr(), cmap="viridis")
     plt.savefig("output/part1-18.png")
-    plt.clf()  # necessary to prevent something funny happening to the graphs in part2
+    plt.clf()  # clear graphs before part 2
     return "output/part1-18.png"
 
 
