@@ -340,11 +340,9 @@ of the pipeline in part 1.
 
 
 def q5a():
-    total_df = part1.load_input()  # since we only care about the pipeline's tp and lat
-    total_size = len(total_df)
     h = ThroughputHelper()
 
-    h.add_pipeline("part1", total_size, lambda: part1.PART_1_PIPELINE)
+    h.add_pipeline("part1", len(part1.load_input()), part1.PART_1_PIPELINE)
     h.compare_throughput()
     h.generate_plot("output/part2-q5a.png")
     return h.throughputs
@@ -353,7 +351,6 @@ def q5a():
 
 def q5b():
     # Return the latency of the pipeline in part 1.
-    part1.load_input
     h = LatencyHelper()
     h.add_pipeline("part1", part1.PART_1_PIPELINE)
     h.compare_latency()
