@@ -954,6 +954,9 @@ def q18(dfs):
     plt.yticks(range(len(df_2021.columns)), df_2021, fontsize=8)
     fig.suptitle("Correlation Matrix for 2021 Top 100 Universities", y=0.05)
 
+    # also print correlation matrix
+    print(df_2021.corr())
+
     ax.matshow(df_2021.corr(), cmap="viridis")
     plt.savefig("output/part1-18.png")
     plt.clf()  # clear graphs before part 2

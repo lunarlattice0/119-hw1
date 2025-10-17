@@ -317,8 +317,8 @@ How much did the latency vary between the three copies of the pipeline?
 Is this more or less than what you expected?
 
 === ANSWER Q4b BELOW ===
-There is very little variance in latency, given that all latencies are all roughly sub-nanosecond timescale.
-This is roughly what I expected, since the tasks all occur on the same computer, with roughly the same operating system state at all times.
+There is little difference between runs 2 and 3, but large difference between 1 and 2. There was more latency than I expected between
+runs 1 and 2, given all tasks occur on the same computer. I suppose there must be quite a lot of start-up cost for loading pandas on the first run.
 === END OF Q4b ANSWER ===
 """
 
@@ -681,10 +681,10 @@ What does this experiment show?
 
 ===== ANSWER Q10 BELOW =====
 The difference in throughput is enormous on medium/large datasets, with the largest difference being 900,000 values/sec, but more minimal for smaller datasets.
-The difference in latency is minimal, about 1.5*1e-6.
+The difference in latency is minimal, about 2ms. This may be due to regular variance.
 Throughput differs much more.
 This experiment shows that loading to memory benefits large operations, which is expected, since RAM is very performant at extended random seek operations.
-Latency isn't affected much, since there is only 1 random seek. The SSD is fast enough that loading 2 rows is going to be comparable to loading from RAM.
+Latency isn't affected much, since there is only 1 random seek. My SSD is fast enough that loading 2 rows is going to be comparable to loading from RAM.
 ===== END OF Q10 ANSWER =====
 """
 
@@ -906,7 +906,7 @@ For Loop pipeline is faster in terms of latency
 What does this experiment show?
 
 ===== ANSWER Q14c BELOW =====
-Even though the for loop latency is mildly faster (~4ms), the throughput is completely awful, being several times slower than vectorized.
+Even though the for loop latency is faster (~4ms), the throughput is very poor, being several times slower than vectorized.
 This experiment shows that, even though there is overhead from using pandas, it is likely not worth the effort to use for loops.
 ===== END OF Q14c ANSWER =====
 """
@@ -944,8 +944,8 @@ throughput is related to latency.
 This is an open ended question.)
 
 ===== ANSWER Q17 BELOW =====
-I would argue that throughput is negatively correlated to latency, even though this is not an apples to apples as latency operates on singular rows only.
-Changes made to increase throughput (such as switching to vectorization or switching to in-RAM variables) either has no effect on latency, or causes latency to increase.
+I would argue that throughput is weakly positively correlated to latency (as in, increasing throughput increases latency), even though this is not an apples to apples comparison, as latency operates on singular rows only.
+Changes made to increase throughput either has little effect on latency (preloading to memory), or causes latency to increase (switching to vectorization).
 ===== END OF Q17 ANSWER =====
 """
 

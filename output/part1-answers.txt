@@ -1,7 +1,7 @@
 q1,3
 q2,True
 q3a,False
-q4,['Universiti Malaya (UM)', 'University of California, San Diego (UCSD)', 'Monash University', 'Lund University', 'University of North Carolina, Chapel Hill']
+q4,['The University of Warwick', 'Brown University', 'The University of Western Australia', 'Korea University', 'Duke University']
 q5a,[100, 100, 100, 100, 100, 100, 100, 100]
 q5b,[100, 100, 100, 100, 100, 100, 100, 100]
 q5c,100
